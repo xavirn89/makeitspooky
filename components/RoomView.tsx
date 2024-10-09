@@ -6,7 +6,7 @@ import { db } from '@/utils/firebase'
 import { doc, getDoc, deleteDoc } from 'firebase/firestore'
 
 const RoomView = () => {
-  const { roomToken, username } = useStore()
+  const { roomToken } = useStore()
   const [players, setPlayers] = useState<string[]>([])
   const router = useRouter()
 
