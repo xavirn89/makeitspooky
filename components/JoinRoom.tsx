@@ -1,12 +1,15 @@
 "use client"
+
 import { useState } from 'react'
 import { db } from '@/utils/firebase'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { useStore } from '@/stores/useStore'
+import { useRouter } from 'next/navigation'
 
 const JoinRoom = () => {
   const { username, setRoomToken } = useStore()
-  const [roomToken, setInputToken] = useState('')
+  const [roomToken, setInputToken] = useState<string>('')
+  const router = useRouter()
 
   const joinRoom = async () => {
     if (!username) {
@@ -23,14 +26,14 @@ const JoinRoom = () => {
       return
     }
 
-    // Actualizar jugadores en Firestore
+    // Actualizar la lista de jugadores en Firestore
     const players = roomSnapshot.data().players || []
     await updateDoc(roomRef, {
       players: [...players, username]
     })
 
     setRoomToken(roomToken)
-    alert(`Joined room ${roomToken}`)
+    router.push(`/room`) // Redirigir a la vista de la sala
   }
 
   return (

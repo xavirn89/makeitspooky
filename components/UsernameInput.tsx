@@ -1,4 +1,5 @@
 "use client"
+
 import { useState, useEffect } from 'react'
 import { useStore } from '@/stores/useStore'
 
@@ -31,7 +32,6 @@ const UsernameInput = () => {
             value={input}
             placeholder="Enter your name"
             onChange={(e) => setInput(e.target.value)}
-            className='text-neutral-700'
           />
           <button onClick={handleSaveUsername}>Save Username</button>
         </div>

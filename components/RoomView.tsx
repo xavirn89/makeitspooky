@@ -1,49 +1,58 @@
 "use client"
+
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import io, { Socket } from 'socket.io-client'
 import { useStore } from '@/stores/useStore'
-import { db } from '@/utils/firebase'
-import { doc, getDoc, deleteDoc } from 'firebase/firestore'
+
+interface ChatMessage {
+  username: string
+  message: string
+}
+
+let socket: Socket | undefined
 
 const RoomView = () => {
-  const { roomToken } = useStore()
+  const { roomToken, username } = useStore()
   const [players, setPlayers] = useState<string[]>([])
-  const router = useRouter()
+  const [message, setMessage] = useState<string>('')
+  const [chat, setChat] = useState<ChatMessage[]>([])
 
   useEffect(() => {
-    if (!roomToken) {
-      // Si no hay roomToken, redirige a la página principal
-      router.push('/')
-      return
-    }
+    if (!roomToken || !username) return
 
-    const fetchRoomData = async () => {
-      const roomRef = doc(db, 'rooms', roomToken)
-      const roomSnapshot = await getDoc(roomRef)
+    socket = io('/api/socket')
 
-      if (roomSnapshot.exists()) {
-        const roomData = roomSnapshot.data()
-        setPlayers(roomData.players)
+    // Emitir evento cuando un jugador se une
+    socket.emit('joinRoom', { roomToken, username })
+
+    // Escuchar cuando un jugador se une
+    socket.on('playerJoined', (newPlayer: string) => {
+      setPlayers((prevPlayers) => [...prevPlayers, newPlayer])
+    })
+
+    // Escuchar cuando un jugador sale de la sala
+    socket.on('playerLeft', (player: string) => {
+      setPlayers((prevPlayers) => prevPlayers.filter((p) => p !== player))
+    })
+
+    // Escuchar mensajes de chat
+    socket.on('messageReceived', ({ username, message }: ChatMessage) => {
+      setChat((prevChat) => [...prevChat, { username, message }])
+    })
+
+    return () => {
+      if (socket) {
+        socket.emit('leaveRoom', { roomToken, username })
+        socket.disconnect()
       }
     }
+  }, [roomToken, username])
 
-    fetchRoomData()
-  }, [roomToken, router])
-
-  const handleCopyToken = () => {
-    if (roomToken) {
-      navigator.clipboard.writeText(roomToken)
-      alert('Token copied to clipboard!')
+  const sendMessage = () => {
+    if (message.trim() && socket) {
+      socket.emit('chatMessage', { roomToken, message, username })
+      setMessage('') // Limpiar el input del mensaje
     }
-  }
-
-  const handleDeleteRoom = async () => {
-    if (!roomToken) return
-
-    const roomRef = doc(db, 'rooms', roomToken)
-    await deleteDoc(roomRef)
-    alert('Room deleted!')
-    router.push('/') // Vuelve a la pantalla principal
   }
 
   return (
@@ -57,8 +66,23 @@ const RoomView = () => {
         ))}
       </ul>
 
-      <button onClick={handleCopyToken}>Copy Token</button>
-      <button onClick={handleDeleteRoom}>Delete Room</button>
+      <div>
+        <h2>Chat</h2>
+        <div>
+          {chat.map((chatMessage, index) => (
+            <p key={index}>
+              <strong>{chatMessage.username}: </strong> {chatMessage.message}
+            </p>
+          ))}
+        </div>
+        <input
+          type="text"
+          value={message}
+          placeholder="Type a message"
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button onClick={sendMessage}>Send</button>
+      </div>
     </div>
   )
 }

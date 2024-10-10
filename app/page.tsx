@@ -1,3 +1,5 @@
+"use client"
+
 import UsernameInput from '@/components/UsernameInput'
 import RoomCreation from '@/components/RoomCreation'
 import JoinRoom from '@/components/JoinRoom'
