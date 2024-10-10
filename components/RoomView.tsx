@@ -1,15 +1,13 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import io, { Socket } from 'socket.io-client'
+import { addPlayerToRoom, listenToPlayers, sendMessage, listenToMessages } from '@/utils/firebaseUtils'
 import { useStore } from '@/stores/useStore'
 
 interface ChatMessage {
   username: string
   message: string
 }
-
-let socket: Socket | undefined
 
 const RoomView = () => {
   const { roomToken, username } = useStore()
@@ -20,41 +18,29 @@ const RoomView = () => {
   useEffect(() => {
     if (!roomToken || !username) return
 
-    // Aquí es donde forzamos WebSockets y deshabilitamos polling
-    socket = io('/api/socket', {
-      transports: ['websocket'], // Forzar solo WebSocket
-      upgrade: false // Deshabilitar el fallback a polling
+    // Agregar el jugador a la sala en Firebase
+    addPlayerToRoom(roomToken, username)
+
+    // Escuchar a los jugadores en tiempo real
+    const unsubscribePlayers = listenToPlayers(roomToken, (players) => {
+      setPlayers(players)
     })
 
-    // Emitir evento cuando un jugador se une
-    socket.emit('joinRoom', { roomToken, username })
-
-    // Escuchar cuando un jugador se une
-    socket.on('playerJoined', (newPlayer: string) => {
-      setPlayers((prevPlayers) => [...prevPlayers, newPlayer])
-    })
-
-    // Escuchar cuando un jugador sale de la sala
-    socket.on('playerLeft', (player: string) => {
-      setPlayers((prevPlayers) => prevPlayers.filter((p) => p !== player))
-    })
-
-    // Escuchar mensajes de chat
-    socket.on('messageReceived', ({ username, message }: ChatMessage) => {
-      setChat((prevChat) => [...prevChat, { username, message }])
+    // Escuchar los mensajes del chat en tiempo real
+    const unsubscribeChat = listenToMessages(roomToken, (messages) => {
+      setChat(messages)
     })
 
     return () => {
-      if (socket) {
-        socket.emit('leaveRoom', { roomToken, username })
-        socket.disconnect()
-      }
+      // Cleanup: puedes eliminar al jugador aquí si lo deseas
+      unsubscribePlayers()
+      unsubscribeChat()
     }
   }, [roomToken, username])
 
-  const sendMessage = () => {
-    if (message.trim() && socket) {
-      socket.emit('chatMessage', { roomToken, message, username })
+  const handleSendMessage = () => {
+    if (message.trim() && roomToken && username) {
+      sendMessage(roomToken, username, message)
       setMessage('') // Limpiar el input del mensaje
     }
   }
@@ -85,7 +71,7 @@ const RoomView = () => {
           placeholder="Type a message"
           onChange={(e) => setMessage(e.target.value)}
         />
-        <button onClick={sendMessage}>Send</button>
+        <button onClick={handleSendMessage}>Send</button>
       </div>
     </div>
   )

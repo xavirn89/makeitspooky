@@ -2,7 +2,7 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import { useStore } from '@/stores/useStore'
-import { db } from '@/utils/firebase'
+import { db } from '@/firebase'
 import { doc, setDoc } from 'firebase/firestore'
 import { useRouter } from 'next/navigation'
 
