@@ -1,6 +1,7 @@
 // @/app/page.tsx
 
 import CreateRoom from '@/components/CreateRoom'
+import JoinRoom from '@/components/JoinRoom'
 import UsernameInput from '@/components/UsernameInput'
 
 const HomePage = () => {
@@ -16,16 +17,7 @@ const HomePage = () => {
         <CreateRoom />
 
         {/* Join Room */}
-        <div className="flex flex-col space-y-4">
-          <input 
-            type="text" 
-            placeholder="Enter room token to join" 
-            className="bg-gray-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg">
-            Join Room
-          </button>
-        </div>
+        <JoinRoom />
       </div>
     </div>
   )
