@@ -22,11 +22,14 @@ const CreateRoom = () => {
     // Crear la referencia de la sala en Firebase Realtime Database
     const roomRef = ref(database, `rooms/${roomToken}`)
 
-    // Guardar los detalles de la sala
+    // Guardar los detalles de la sala con el host como "ready"
     await set(roomRef, {
       host: username,
       players: {
-        [username]: true
+        [username]: {
+          username,
+          ready: true // El host se marca automáticamente como listo
+        }
       },
       createdAt: Date.now()
     })

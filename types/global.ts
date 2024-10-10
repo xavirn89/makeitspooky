@@ -1,5 +1,6 @@
 export interface Player {
   username: string
+  ready: boolean
 }
 
 export interface ChatMessage {

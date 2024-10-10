@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { addPlayerToRoom, listenToPlayers, sendMessage, listenToMessages } from '@/utils/firebaseUtils'
+import { useRouter } from 'next/navigation' // Importar el router
+import { addPlayerToRoom, listenToPlayers, sendMessage, listenToMessages, setPlayerReady } from '@/utils/firebaseUtils'
 import { useStore } from '@/stores/useStore'
 import { Player, ChatMessage } from '@/types/global'
 
@@ -10,20 +11,29 @@ const RoomPage = () => {
   const [players, setPlayers] = useState<Player[]>([])
   const [message, setMessage] = useState<string>('')
   const [chat, setChat] = useState<ChatMessage[]>([])
+  const router = useRouter() // Usar el router para redirección
 
   useEffect(() => {
-    if (!roomToken || !username) return
+    // Si no hay roomToken, redirigir a la página principal
+    if (!roomToken) {
+      router.push('/')
+      return
+    }
+
+    if (!username) return
 
     // Agregar el jugador a la sala en Firebase
     addPlayerToRoom(roomToken, username)
 
     // Escuchar a los jugadores en tiempo real
     const unsubscribePlayers = listenToPlayers(roomToken, (players: Player[]) => {
+      console.log("Players in room:", players)
       setPlayers(players)
     })
 
     // Escuchar los mensajes del chat en tiempo real
     const unsubscribeChat = listenToMessages(roomToken, (messages: ChatMessage[]) => {
+      console.log("Messages in chat:", messages)
       setChat(messages)
     })
 
@@ -31,7 +41,14 @@ const RoomPage = () => {
       unsubscribePlayers()
       unsubscribeChat()
     }
-  }, [roomToken, username])
+  }, [roomToken, username, router])
+
+  const toggleReady = () => {
+    const currentPlayer = players.find(p => p.username === username)
+    if (currentPlayer) {
+      setPlayerReady(roomToken!, username!, !currentPlayer.ready)
+    }
+  }
 
   const handleSendMessage = () => {
     if (message.trim() && roomToken && username) {
@@ -49,11 +66,26 @@ const RoomPage = () => {
         <h2 className="text-xl font-semibold">Players in the room:</h2>
         <ul className="bg-gray-800 p-4 rounded-lg shadow-md">
           {players.map((player, index) => (
-            <li key={index} className="py-2 border-b border-gray-700 last:border-none">
-              {player.username}
+            <li key={index} className="py-2 border-b border-gray-700 last:border-none flex justify-between items-center">
+              <span>{player.username}</span>
+              <span className={`px-2 py-1 rounded-lg ${player.ready ? 'bg-green-500' : 'bg-red-500'}`}>
+                {player.ready ? 'Ready' : 'Not Ready'}
+              </span>
             </li>
           ))}
         </ul>
+
+        {/* Botón de Ready */}
+        <div className="flex justify-center">
+          <button
+            className={`${
+              players.find(p => p.username === username)?.ready ? 'bg-red-600' : 'bg-green-600'
+            } hover:bg-opacity-80 text-white py-2 px-4 rounded-lg`}
+            onClick={toggleReady}
+          >
+            {players.find(p => p.username === username)?.ready ? 'Unready' : 'Ready'}
+          </button>
+        </div>
 
         <div className="w-full">
           <h2 className="text-xl font-semibold mb-2">Chat</h2>

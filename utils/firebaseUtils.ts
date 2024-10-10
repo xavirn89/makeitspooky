@@ -1,13 +1,19 @@
 // @/utils/firebaseUtils.ts
 
-import { ref, onValue, set, push } from 'firebase/database'
+import { ref, onValue, set, push, update } from 'firebase/database'
 import { database } from '@/firebase'
 import { ChatMessage, Player } from '@/types/global'
 
 // Agregar un jugador a la sala
 export const addPlayerToRoom = (roomToken: string, username: string) => {
   const playerRef = ref(database, `rooms/${roomToken}/players/${username}`)
-  return set(playerRef, { username })
+  return set(playerRef, { username, ready: false })
+}
+
+// Cambiar el estado "Ready" del jugador
+export const setPlayerReady = (roomToken: string, username: string, ready: boolean) => {
+  const playerRef = ref(database, `rooms/${roomToken}/players/${username}`)
+  return update(playerRef, { ready })
 }
 
 // Escuchar los cambios en la lista de jugadores
@@ -15,7 +21,6 @@ export const listenToPlayers = (roomToken: string, callback: (players: Player[])
   const playersRef = ref(database, `rooms/${roomToken}/players`)
   return onValue(playersRef, (snapshot) => {
     const playersData = snapshot.val() || {}
-    // Convertir el objeto de jugadores en una lista de objetos { username: string }
     const playersList = Object.values(playersData) as Player[]
     callback(playersList)
   })
