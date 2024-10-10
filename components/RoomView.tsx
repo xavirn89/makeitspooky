@@ -20,7 +20,11 @@ const RoomView = () => {
   useEffect(() => {
     if (!roomToken || !username) return
 
-    socket = io('/api/socket')
+    // Aquí es donde forzamos WebSockets y deshabilitamos polling
+    socket = io('/api/socket', {
+      transports: ['websocket'], // Forzar solo WebSocket
+      upgrade: false // Deshabilitar el fallback a polling
+    })
 
     // Emitir evento cuando un jugador se une
     socket.emit('joinRoom', { roomToken, username })
