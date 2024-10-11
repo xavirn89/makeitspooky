@@ -1,6 +1,6 @@
 // @/utils/firebaseUtils.ts
 
-import { ref, onValue, set, push, update } from 'firebase/database'
+import { ref, onValue, set, push, update, get } from 'firebase/database'
 import { database } from '@/firebase'
 import { ChatMessage, Player } from '@/types/global'
 
@@ -8,6 +8,18 @@ import { ChatMessage, Player } from '@/types/global'
 export const addPlayerToRoom = (roomToken: string, username: string) => {
   const playerRef = ref(database, `rooms/${roomToken}/players/${username}`)
   return set(playerRef, { username, ready: false })
+}
+
+// Obtener el host de la sala
+export const getRoomHost = async (roomToken: string): Promise<string | null> => {
+  try {
+    const hostRef = ref(database, `rooms/${roomToken}/host`)
+    const snapshot = await get(hostRef)
+    return snapshot.exists() ? snapshot.val() : null
+  } catch (error) {
+    console.error("Error fetching host data:", error)
+    throw new Error("Failed to fetch host data")
+  }
 }
 
 // Cambiar el estado "Ready" del jugador
@@ -46,3 +58,5 @@ export const listenToMessages = (roomToken: string, callback: (messages: ChatMes
     callback(messagesList)
   })
 }
+
+
