@@ -1,18 +1,19 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation' // Importar el router
-import { addPlayerToRoom, listenToPlayers, sendMessage, listenToMessages, setPlayerReady, getRoomHost } from '@/utils/firebaseUtils'
-import { useStore } from '@/stores/useStore'
+import { useRouter } from 'next/navigation'
+import { addPlayerToRoom_DB, listenToPlayers_DB, sendMessage_DB, listenToMessages_DB, setPlayerReady_DB, setStageAndRoundAndPhase_DB, getRoomHost_DB, listenToStage_DB, setNumberOfRounds_DB } from '@/utils/firebaseUtils'
+import { useAppStore } from '@/stores/useAppStore'
 import { Player, ChatMessage } from '@/types/global'
 
 const RoomPage = () => {
-  const { roomToken, username } = useStore()
+  const { roomToken, username, setStage, setRound, setPhase } = useAppStore()
   const [imHost, setImHost] = useState<boolean | undefined>()
   const [players, setPlayers] = useState<Player[]>([])
   const [message, setMessage] = useState<string>('')
   const [chat, setChat] = useState<ChatMessage[]>([])
   const [allReady, setAllReady] = useState<boolean>(false)
+  const [numRounds, setNumRounds] = useState<number>(3)
   const router = useRouter()
 
   useEffect(() => {
@@ -25,45 +26,83 @@ const RoomPage = () => {
     if (!username) return
 
     const handleGetRoomHost = async () => {
-      const hostName = await getRoomHost(roomToken)
+      const hostName = await getRoomHost_DB(roomToken)
       setImHost(username === hostName)
     }
 
     if (roomToken && imHost === undefined) handleGetRoomHost()
 
     // Agregar el jugador a la sala en Firebase
-    addPlayerToRoom(roomToken, username)
+    addPlayerToRoom_DB(roomToken, username)
 
     // Escuchar a los jugadores en tiempo real
-    const unsubscribePlayers = listenToPlayers(roomToken, (players: Player[]) => {
+    const unsubscribePlayers = listenToPlayers_DB(roomToken, (players: Player[]) => {
       setPlayers(players)
       setAllReady(players.every(player => player.ready))
     })
 
     // Escuchar los mensajes del chat en tiempo real
-    const unsubscribeChat = listenToMessages(roomToken, (messages: ChatMessage[]) => {
+    const unsubscribeChat = listenToMessages_DB(roomToken, (messages: ChatMessage[]) => {
       setChat(messages)
     })
+
+    // Escuchar los cambios en el stage solo si no soy el host
+    if (!imHost) {
+      const unsubscribeStage = listenToStage_DB(roomToken, (newStage: number) => {
+        if (newStage === 1) {
+          router.push('/game')
+          setStage(1)
+          setRound(1)
+          setPhase(0)
+        }
+      })
+
+      return () => {
+        unsubscribeStage()
+      }
+    }
 
     return () => {
       unsubscribePlayers()
       unsubscribeChat()
     }
-  }, [roomToken, username, router])
+  }, [roomToken, username, router, imHost])
 
   const toggleReady = () => {
     const currentPlayer = players.find(p => p.username === username)
     if (currentPlayer) {
-      setPlayerReady(roomToken!, username!, !currentPlayer.ready)
+      setPlayerReady_DB(roomToken!, username!, !currentPlayer.ready)
     }
   }
 
   const handleSendMessage = () => {
     if (message.trim() && roomToken && username) {
-      console.log(`Sending message: ${message} from ${username}`)
-      sendMessage(roomToken, username, message)
+      sendMessage_DB(roomToken, username, message)
       setMessage('')
     }
+  }
+
+  const handleNumRoundsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10)
+    setNumRounds(value)
+    // Agregar un pequeño retraso para asegurar que el valor se actualice correctamente
+    setTimeout(async () => {
+      await setNumberOfRounds_DB(roomToken!, value)
+    }, 100)
+  }
+
+  const startGame = async () => {
+    // Actualizamos el stage y el round en Firebase
+    await setNumberOfRounds_DB(roomToken!, numRounds)
+    await setStageAndRoundAndPhase_DB(roomToken!, 1, 1, 0)
+
+    // Actualizamos el estado local
+    setStage(1)
+    setRound(1)
+    setPhase(0)
+
+    // Redirigimos a la página del primer round
+    router.push(`/game`)
   }
 
   return (
@@ -106,12 +145,34 @@ const RoomPage = () => {
           </button>
         </div>
 
-        {allReady && imHost && (
-          <div className="flex justify-center">
-            <button className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg">
-              All Players Ready
-            </button>
-          </div>
+        {imHost && (
+          <>
+            {/* Input para establecer el número de rondas */}
+            <>
+            <label className="text-white">Number of Rounds:</label>
+            <div className="flex items-center space-x-4">
+              <input
+                type="number"
+                value={numRounds}
+                onChange={handleNumRoundsChange}
+                placeholder="Number of rounds"
+                className="p-2 rounded-lg bg-gray-700 text-white"
+              />
+            </div>
+            </>
+
+            {/* Botón para empezar el juego */}
+            {allReady && (
+              <div className="flex justify-center">
+                <button
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-lg"
+                  onClick={startGame}
+                >
+                  All Players Ready - Start Game
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         <div className="w-full">

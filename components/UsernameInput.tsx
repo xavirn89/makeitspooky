@@ -2,10 +2,10 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useStore } from '@/stores/useStore'
+import { useAppStore } from '@/stores/useAppStore'
 
 const UsernameInput = () => {
-  const { username, setUsername } = useStore()
+  const { username, setUsername } = useAppStore()
   const [input, setInput] = useState<string>('')
 
   useEffect(() => {

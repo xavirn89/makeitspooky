@@ -2,14 +2,14 @@
 "use client"
 
 import { useState } from 'react'
-import { useStore } from '@/stores/useStore'
+import { useAppStore } from '@/stores/useAppStore'
 import { useRouter } from 'next/navigation'
 import { ref, get } from 'firebase/database'
 import { database } from '@/firebase'
 
 const JoinRoom = () => {
   const [roomTokenInput, setRoomTokenInput] = useState<string>('')
-  const { setRoomToken } = useStore()
+  const { setRoomToken } = useAppStore()
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 

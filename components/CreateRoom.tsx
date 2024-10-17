@@ -2,13 +2,13 @@
 "use client"
 
 import { v4 as uuidv4 } from 'uuid'
-import { useStore } from '@/stores/useStore'
+import { useAppStore } from '@/stores/useAppStore'
 import { database } from '@/firebase'
 import { ref, set } from 'firebase/database'
 import { useRouter } from 'next/navigation'
 
 const CreateRoom = () => {
-  const { username, setRoomToken } = useStore()
+  const { username, setRoomToken } = useAppStore()
   const router = useRouter()
 
   const createRoom = async () => {
