@@ -8,3 +8,9 @@ export interface ChatMessage {
   message: string
   timestamp: number
 }
+
+export type Parameters = {
+  fromObject: string
+  toObject: string
+  backgroundReplacePrompt: string
+}

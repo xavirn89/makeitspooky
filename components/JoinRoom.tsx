@@ -6,12 +6,14 @@ import { useAppStore } from '@/stores/useAppStore'
 import { useRouter } from 'next/navigation'
 import { ref, get } from 'firebase/database'
 import { database } from '@/firebase'
+import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 
 const JoinRoom = () => {
   const [roomTokenInput, setRoomTokenInput] = useState<string>('')
   const { setRoomToken } = useAppStore()
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [showToken, setShowToken] = useState<boolean>(false)
 
   const handleJoinRoom = async () => {
     if (roomTokenInput.trim()) {
@@ -19,11 +21,9 @@ const JoinRoom = () => {
       const roomSnapshot = await get(roomRef)
 
       if (roomSnapshot.exists()) {
-        // La sala existe, podemos unirnos
         setRoomToken(roomTokenInput)
         router.push(`/room`)
       } else {
-        // La sala no existe
         setError('Room does not exist. Please check the token and try again.')
       }
     } else {
@@ -31,18 +31,35 @@ const JoinRoom = () => {
     }
   }
 
+  const toggleShowToken = () => {
+    setShowToken(!showToken)
+  }
+
   return (
     <div className="flex flex-col space-y-4">
-      <input
-        type="text"
-        value={roomTokenInput}
-        placeholder="Enter room token to join"
-        className="bg-gray-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        onChange={(e) => {
-          setRoomTokenInput(e.target.value)
-          setError(null) // Limpiar cualquier error previo al modificar el input
-        }}
-      />
+      <div className="relative">
+        <input
+          type={showToken ? 'text' : 'password'}
+          value={roomTokenInput}
+          placeholder="Enter room token to join"
+          className="bg-gray-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+          onChange={(e) => {
+            setRoomTokenInput(e.target.value)
+            setError(null)
+          }}
+        />
+        <button
+          type="button"
+          className="absolute right-3 top-3 text-gray-400"
+          onClick={toggleShowToken}
+        >
+          {showToken ? (
+            <AiFillEyeInvisible className="h-6 w-6" />
+          ) : (
+            <AiFillEye className="h-6 w-6" />
+          )}
+        </button>
+      </div>
       <button
         onClick={handleJoinRoom}
         className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg"

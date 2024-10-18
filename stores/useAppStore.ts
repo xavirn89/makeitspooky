@@ -13,6 +13,10 @@ interface StoreState {
   setPhase: (phase: number) => void
   numRounds: number
   setNumRounds: (num: number) => void
+  usedImages: string[]
+  setUsedImages: (images: string[]) => void
+  roundImage: string | null
+  setRoundImage: (image: string | null) => void
 }
 
 export const useAppStore = create<StoreState>((set) => ({
@@ -33,4 +37,8 @@ export const useAppStore = create<StoreState>((set) => ({
   setPhase: (phase: number) => set(() => ({ phase })),
   numRounds: 0,
   setNumRounds: (num: number) => set(() => ({ numRounds: num })),
+  usedImages: [],
+  setUsedImages: (images: string[]) => set(() => ({ usedImages: images })),
+  roundImage: null,
+  setRoundImage: (image: string | null) => set(() => ({ roundImage: image })),
 }))

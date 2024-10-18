@@ -24,10 +24,25 @@ const UsernameInput = () => {
     }
   }
 
+  const handleChangeUsername = () => {
+    // Limpiar el nombre de usuario de localStorage y del estado global
+    localStorage.removeItem('username')
+    setUsername('')
+    setInput('') // Limpiar el input también
+  }
+
   return (
     <div className="space-y-4">
       {username ? (
-        <p className="text-lg">Welcome, <span className="font-semibold text-indigo-400">{username}</span>!</p>
+        <div>
+          <p className="text-lg">Welcome, <span className="font-semibold text-indigo-400">{username}</span>!</p>
+          <button 
+            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg mt-2"
+            onClick={handleChangeUsername}
+          >
+            Change Username
+          </button>
+        </div>
       ) : (
         <div className="flex flex-col space-y-4">
           <input

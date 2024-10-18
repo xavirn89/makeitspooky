@@ -92,21 +92,6 @@ export const listenToMessages_DB = (roomToken: string, callback: (messages: Chat
   })
 }
 
-// Save the player's transformed URL under the current round
-export const savePlayerUrl_DB = (roomToken: string, round: number, username: string, url: string) => {
-  const urlRef = ref(database, `rooms/${roomToken}/urls/${round}/${username}`)
-  return set(urlRef, { url: url })
-}
-
-// Escuchar los cambios en las URLs subidas por los jugadores
-export const listenToPlayerUrls_DB = (roomToken: string, round: number, callback: (urls: { [username: string]: string }) => void) => {
-  const urlsRef = ref(database, `rooms/${roomToken}/urls/${round}`)
-  return onValue(urlsRef, (snapshot) => {
-    const urlsData = snapshot.val() || {}
-    callback(urlsData)
-  })
-}
-
 // Borrar la sala de Firebase
 export const deleteRoom_DB = async (roomToken: string) => {
   const roomRef = ref(database, `rooms/${roomToken}`)
@@ -163,4 +148,64 @@ export const getPlayerPoints_DB = async (roomToken: string): Promise<{ [username
   const pointsRef = ref(database, `rooms/${roomToken}/points`)
   const snapshot = await get(pointsRef)
   return snapshot.val() || {}
+}
+
+// Escuchar los cambios en el número de rondas
+export const listenToNumRounds_DB = (roomToken: string, callback: (numRounds: number) => void) => {
+  const numRoundsRef = ref(database, `rooms/${roomToken}/numRounds`)
+  return onValue(numRoundsRef, (snapshot) => {
+    const numRounds = snapshot.val() || 0
+    callback(numRounds)
+  })
+}
+
+// Obtener el valor de roundImage
+export const getRoundImage_DB = async (roomToken: string) => {
+  const roundImageRef = ref(database, `rooms/${roomToken}/roundImage`)
+  const snapshot = await get(roundImageRef)
+  return snapshot.exists() ? snapshot.val() : null
+}
+
+// Guardar un roundImage en la base de datos
+export const setRoundImage_DB = (roomToken: string, image: string) => {
+  const roundImageRef = ref(database, `rooms/${roomToken}/roundImage`)
+  return set(roundImageRef, image)
+}
+
+// Obtener las imágenes usadas y devolverlas como un array
+export const getUsedImages_DB = async (roomToken: string) => {
+  const usedImagesRef = ref(database, `rooms/${roomToken}/usedImages`)
+  const snapshot = await get(usedImagesRef)
+  const usedImagesObj = snapshot.val() || {}
+  return Object.values(usedImagesObj)
+}
+
+// Guardar las imágenes usadas
+export const addToUsedImages_DB = (roomToken: string, image: string) => {
+  const usedImagesRef = ref(database, `rooms/${roomToken}/usedImages`)
+  return push(usedImagesRef, image)
+}
+
+// Escuchar cambios en el roundImage
+export const listenToRoundImage_DB = (roomToken: string, callback: (roundImage: string | null) => void) => {
+  const roundImageRef = ref(database, `rooms/${roomToken}/roundImage`)
+  return onValue(roundImageRef, (snapshot) => {
+    const roundImage = snapshot.val() || null
+    callback(roundImage)
+  })
+}
+
+// Guardar los parámetros del jugador
+export const savePlayerParameters_DB = (roomToken: string, round: number, username: string, parameters: { fromObject: string, toObject: string, backgroundReplacePrompt: string }) => {
+  const paramsRef = ref(database, `rooms/${roomToken}/parameters/${round}/${username}`)
+  return set(paramsRef, parameters)
+}
+
+// Escuchar los parámetros de los jugadores
+export const listenToPlayerParameters_DB = (roomToken: string, round: number, callback: (parameters: { [username: string]: { fromObject: string, toObject: string, backgroundReplacePrompt: string } }) => void) => {
+  const paramsRef = ref(database, `rooms/${roomToken}/parameters/${round}`)
+  return onValue(paramsRef, (snapshot) => {
+    const parametersData = snapshot.val() || {}
+    callback(parametersData)
+  })
 }
