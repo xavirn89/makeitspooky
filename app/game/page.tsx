@@ -1,27 +1,25 @@
 "use client"
 
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppStore } from '@/stores/useAppStore'
 import Phase0 from '@/components/game/Phase0'
 import Phase1 from '@/components/game/Phase1'
-import { listenToPlayers_DB, setPhase_DB, listenToRound_DB, listenToStage_DB, getNumRounds_DB, listenToMessages_DB, getRoomHost_DB, getRoundImage_DB, getUsedImages_DB, setRoundImage_DB, addToUsedImages_DB, listenToRoundImage_DB, listenToPlayerParameters_DB } from '@/utils/firebaseUtils'
+import { listenToPlayers_DB, setPhase_DB, listenToRound_DB, listenToStage_DB, getNumRounds_DB, getRoomHost_DB, getUsedImages_DB, setRoundImage_DB, addToUsedImages_DB, listenToRoundImage_DB, listenToPlayerParameters_DB } from '@/utils/firebaseUtils'
 import CloseRoomButton from '@/components/CloseRoomButton'
-import RoomTitle from '@/components/room/RoomTitle'
 import RoundInfo from '@/components/game/RoundInfo'
 import Classification from '@/components/game/Classification'
 import Chat from '@/components/room/Chat'
 import { useRouter } from 'next/navigation'
-import { ChatMessage, Parameters } from '@/types/global'
+import { Parameters, Player } from '@/types/global'
 import { imageNames } from '@/utils/constants'
+import Navbar from '@/sections/Navbar'
 
 export default function GamePage() {
-  const { roomToken, stage, round, username, phase, numRounds, setPhase, setRound, setNumRounds, setStage, roundImage, setRoundImage, usedImages, setUsedImages } = useAppStore()
-  const [allPlayersSubmitted, setAllPlayersSubmitted] = useState<boolean>(false)
+  const { roomToken, round, username, phase, numRounds, setPhase, setRound, setNumRounds, setStage, roundImage, setRoundImage, setUsedImages } = useAppStore()
   const [playerCount, setPlayerCount] = useState<number>(0)
+  const [players, setPlayers] = useState<Player[]>([])
   const [playerParameters, setPlayerParameters] = useState<{ [username: string]: Parameters }>({})
-  const [points, setPoints] = useState<{ [player: string]: number }>({})
-  const [message, setMessage] = useState<string>('')
-  const [chat, setChat] = useState<ChatMessage[]>([])
+  const [points] = useState<{ [player: string]: number }>({})
   const [imHost, setImHost] = useState<boolean | undefined>()
   const router = useRouter()
 
@@ -32,16 +30,16 @@ export default function GamePage() {
       setPlayerParameters(parameters)
     })
 
-    const unsubscribePlayers = listenToPlayers_DB(roomToken, (players) => {
+    const unsubscribePlayers = listenToPlayers_DB(roomToken, (players: Player[]) => {
+      setPlayers(players)
+    })
+
+    const unsubscribePlayersCount = listenToPlayers_DB(roomToken, (players) => {
       setPlayerCount(players.length)
     })
 
     const unsubscribeRound = listenToRound_DB(roomToken, (newRound) => {
       setRound(newRound)
-    })
-
-    const unsubscribeChat = listenToMessages_DB(roomToken, (messages: ChatMessage[]) => {
-      setChat(messages)
     })
 
     const unsubscribeRoundImage = listenToRoundImage_DB(roomToken, (currentRoundImage) => {
@@ -58,9 +56,9 @@ export default function GamePage() {
     return () => {
       unsubscribeParams()
       unsubscribePlayers()
+      unsubscribePlayersCount()
       unsubscribeRound()
       unsubscribeStage()
-      unsubscribeChat()
       unsubscribeRoundImage()
     }
   }, [roomToken, round])
@@ -111,34 +109,35 @@ export default function GamePage() {
     console.log("Length of playerParameters: ", Object.keys(playerParameters).length)
     console.log("Player count: ", playerCount)
     if (Object.keys(playerParameters).length === playerCount && playerCount > 0) {
-      setAllPlayersSubmitted(true)
       setPhase(1)
       setPhase_DB(roomToken!, 1)
     }
   }, [playerParameters, playerCount, setPhase])
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <RoomTitle roomToken={roomToken!} />
-      <RoundInfo round={round} numRounds={numRounds} />
-      <Classification points={points} />
+    <div className="h-screen bg-gray-900 text-white flex flex-col items-center">
+      <Navbar roomToken={roomToken!} />
 
-      {roundImage && (
-        <div className="my-8 flex justify-center">
-          <img
-            src={`/images/${roundImage}.jpg`}
-            alt={`Round image: ${roundImage}`}
-            className="w-96 h-auto rounded-lg shadow-lg"
-          />
+      <div className='flex w-full h-full gap-10 px-52'>
+        <div className='flex flex-col w-3/12 h-full gap-6'>
+          <RoundInfo round={round} numRounds={numRounds} />
+          <Classification points={points} players={players} />
+          <Chat />
         </div>
-      )}
+
+        <div className='flex flex-col w-9/12 h-full gap-10'>
+          {phase === 0 && <Phase0 />}
+          {phase === 1 && <Phase1 uploadedParameters={playerParameters} roundImage={roundImage!} />}
+        </div>
+      </div>
+      
+
+      
 
 
-      {phase === 0 && <Phase0 />}
-      {phase === 1 && <Phase1 uploadedParameters={playerParameters} roundImage={roundImage!} />}
+      
 
 
-      <Chat />
 
       <CloseRoomButton />
     </div>

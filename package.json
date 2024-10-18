@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@cloudinary/url-gen": "^1.21.0",
+    "@fontsource/changa-one": "^5.1.0",
     "firebase": "^10.14.0",
     "next": "14.2.15",
     "next-cloudinary": "^6.14.1",

@@ -1,7 +1,6 @@
-// @/components/room/RoomTitle
+// @/components/room/RoomTitle.tsx
 "use client"
 
-import { theme } from '@cloudinary/url-gen/actions/effect'
 import { useState } from 'react'
 import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai'
 import { ToastContainer, toast } from 'react-toastify'
@@ -9,9 +8,10 @@ import 'react-toastify/dist/ReactToastify.css'
 
 interface RoomTitleProps {
   roomToken: string
+  smallText?: boolean
 }
 
-const RoomTitle = ({ roomToken }: RoomTitleProps) => {
+const RoomTitle = ({ roomToken, smallText = false }: RoomTitleProps) => {
   const [showToken, setShowToken] = useState(false)
 
   const handleCopy = () => {
@@ -23,9 +23,9 @@ const RoomTitle = ({ roomToken }: RoomTitleProps) => {
   }
 
   return (
-    <div className="flex items-center space-x-4 w-full">
-      <h1 className="text-3xl font-bold">Room:</h1>
-      <div className="flex items-center bg-gray-800 text-white py-2 px-4 rounded-lg">
+    <div className={`flex items-center space-x-4 w-full ${smallText ? 'text-sm' : 'text-base'}`}>
+      <h1 className={`font-bold ${smallText ? 'text-xl' : 'text-3xl'}`}>Room</h1>
+      <div className={`flex items-center bg-gray-800 text-white py-2 px-4 rounded-lg ${smallText ? 'text-xs' : ''}`}>
         <span>{showToken ? roomToken : '●'.repeat(roomToken.length)}</span>
         <button
           onClick={() => setShowToken((prev) => !prev)}
@@ -35,7 +35,7 @@ const RoomTitle = ({ roomToken }: RoomTitleProps) => {
         </button>
       </div>
       <button
-        className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+        className={`bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg ${smallText ? 'text-xs py-1 px-2' : ''}`}
         onClick={handleCopy}
       >
         Copy

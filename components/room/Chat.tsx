@@ -30,9 +30,9 @@ const Chat = () => {
   }
 
   return (
-    <div className="w-full max-w-md space-y-6">
-      <div className="w-full">
-        <h2 className="text-xl font-semibold mb-2">Chat</h2>
+    <div className='flex flex-col w-full h-full gap-6'>
+      <div className="flex flex-col w-full">
+        <h2 className="text-2xl font-semibold mb-2">Chat</h2>
         <div className="h-64 bg-gray-800 p-4 rounded-lg shadow-md overflow-y-auto">
           {chat.length === 0 ? (
             <p className="text-gray-400">No messages yet</p>

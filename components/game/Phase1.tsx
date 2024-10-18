@@ -14,10 +14,10 @@ interface Phase1Props {
 }
 
 export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) {
-  const { roomToken, round, username, numRounds, setPhase, setRound, usedImages, setUsedImages } = useAppStore()
+  const { roomToken, round, username, numRounds, setPhase, setRound, setUsedImages } = useAppStore()
   const [hasVoted, setHasVoted] = useState<string | null>(null)
   const [totalVotes, setTotalVotes] = useState<{ [voter: string]: string }>({})
-  const [playerCount, setPlayerCount] = useState<number>(Object.keys(uploadedParameters).length)
+  const [playerCount] = useState<number>(Object.keys(uploadedParameters).length)
 
   useEffect(() => {
     if (!roomToken || !round) return
@@ -65,7 +65,7 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
       setPhase_DB(roomToken!, 0)
       setStage_DB(roomToken!, 2)
     } else {
-      selectNewRoundImage() // Select a new round image for the next round
+      await selectNewRoundImage()  // Select a new round image for the next round
       setRound(round + 1)
       setPhase(0)
       setRound_DB(roomToken!, round + 1)
@@ -75,33 +75,32 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
 
   const selectNewRoundImage = async () => {
     const usedImages = await getUsedImages_DB(roomToken!)
-    console.log("Used images: ", usedImages)
     setUsedImages(usedImages as string[])
-  
+
     const availableImages = imageNames.filter(image => !usedImages.includes(image))
     const randomImage = availableImages[Math.floor(Math.random() * availableImages.length)]
-  
+
     await setRoundImage_DB(roomToken!, randomImage)
     await addToUsedImages_DB(roomToken!, randomImage)
-  
+
     console.log(`New round image selected: ${randomImage}`)
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">Player Transformations</h1>
-
-      {hasVoted ? (
-        <div>
-          <p className="text-xl">Has votado a <strong>{hasVoted}</strong></p>
-          <p className="text-lg text-gray-400">Esperando a los demás jugadores...</p>
+    <div className="flex w-full h-full flex-col gap-10">
+      <div className="flex flex-col w-full gap-10">
+        <div className="bg-gray-800/25 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold text-white mb-4">Player Transformations</h2>
+          <p className="text-gray-400 mb-4">
+            Vote for the image that you find the most spooky, scary, or original! Click on the image to submit your vote.
+          </p>
         </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-4">
-          {Object.entries(uploadedParameters).map(([player, parameters]) => (
+
+        <div className="grid grid-cols-3 gap-4 w-full">
+          {Object.entries(uploadedParameters).map(([player, parameters]) =>
             player !== username ? (
-              <div 
-                key={player} 
+              <div
+                key={player}
                 className="relative group p-4 border-2 border-gray-500 rounded-lg cursor-pointer"
                 onClick={() => handleVote(player)}
               >
@@ -126,12 +125,14 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
                 <div className="absolute inset-0 border-2 border-transparent rounded-lg group-hover:border-indigo-500 transition-all duration-300"></div>
               </div>
             ) : null
-          ))}
+          )}
         </div>
-      )}
+      </div>
 
-      {Object.keys(uploadedParameters).length === 1 && (
-        <p className="text-gray-400">Waiting for other players to submit their transformations...</p>
+      {hasVoted && (
+        <div className="text-xl text-white">
+          <p>You voted for <strong>{hasVoted}</strong>. Waiting for other players to finish voting...</p>
+        </div>
       )}
     </div>
   )

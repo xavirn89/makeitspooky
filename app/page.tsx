@@ -1,46 +1,49 @@
 // @/app/page.tsx
-'use client'
+
 import CreateRoom from '@/components/CreateRoom'
+import Branches from '@/components/home/Branches'
 import JoinRoom from '@/components/JoinRoom'
 import UsernameInput from '@/components/UsernameInput'
-import { getCldImageUrl } from 'next-cloudinary'
-import { useEffect } from 'react'
 
 const HomePage = () => {
-
-  useEffect(() => {
-
-    const test = getCldImageUrl({
-      src: 'keanureeves',
-      width: 1000,
-      height: 1000,
-      replace: {
-        from: 'rock',
-        to: 'skeletons',
-        preserveGeometry: true,
-      },
-      replaceBackground: {
-        seed: 3,
-        prompt: 'Generate with a dark, creepy scary style a cementery',
-      }
-    })
-    console.log(test)
-
-  },[])
-
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold mb-8">Make It Spooky</h1>
-      
-      <div className="w-full max-w-sm space-y-4">
-        {/* Username input */}
-        <UsernameInput />
+    <div className="relative min-h-screen bg-gray-900 text-white flex flex-col items-center p-8 overflow-hidden">
+      <Branches />
 
-        {/* Create room */}
-        <CreateRoom />
+      <div className="flex flex-col flex-1 gap-28 items-center mt-10 w-1/2">
+        <h1 className="font-changa-one text-7xl font-black mb-8 animate-glowFlicker text-yellow-500">
+          Make It Spooky
+        </h1>
 
-        {/* Join Room */}
-        <JoinRoom />
+        <div className="w-full space-y-6">
+          <UsernameInput />
+
+          <div className="flex bg-slate-800/90 w-full p-10 space-x-6 rounded-2xl shadow-lg shadow-slate-900/50 border border-slate-600/50 backdrop-blur-lg">
+            <div className="w-1/2 flex flex-col space-y-4 border-r border-slate-500/50 pr-4">
+              <div className="flex-grow space-y-4">
+                <h2 className="text-3xl font-semibold text-gray-100 text-center">Create a Room</h2>
+                <p className="text-md text-gray-400 text-center">
+                  Create a room and invite your friends to join the fun!
+                </p>
+              </div>
+              <div className="mt-auto">
+                <CreateRoom />
+              </div>
+            </div>
+
+            <div className="w-1/2 flex flex-col space-y-4">
+              <div className="flex-grow space-y-4 mb-10">
+                <h2 className="text-3xl font-semibold text-gray-100 text-center">Join a Room</h2>
+                <p className="text-md text-gray-400 text-center">
+                  Join a room by entering the room code shared by your friends.
+                </p>
+              </div>
+              <div className="mt-auto">
+                <JoinRoom />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

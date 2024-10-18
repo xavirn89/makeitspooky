@@ -42,7 +42,7 @@ const JoinRoom = () => {
           type={showToken ? 'text' : 'password'}
           value={roomTokenInput}
           placeholder="Enter room token to join"
-          className="bg-gray-800 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
+          className="bg-gray-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full"
           onChange={(e) => {
             setRoomTokenInput(e.target.value)
             setError(null)
@@ -62,9 +62,9 @@ const JoinRoom = () => {
       </div>
       <button
         onClick={handleJoinRoom}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg w-full"
       >
-        Join Room
+        <p className='font-black text-lg'>Join Room</p>
       </button>
       {error && <p className="text-red-500">{error}</p>}
     </div>

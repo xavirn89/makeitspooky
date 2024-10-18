@@ -11,23 +11,31 @@ interface PlayersProps {
 
 const Players = ({ players, username, host }: PlayersProps) => {
   return (
-    <div className='flex-col w-full space-y-4'>
-      <h2 className="text-xl font-semibold">Players in the room:</h2>
-      <ul className="bg-gray-800 p-4 rounded-lg shadow-md space-y-2">
-        {players.map((player, index) => (
-          <li key={index} className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <span>{player.username}</span>
-              {player.username === host && (
-                <span className="text-xs text-yellow-500 bg-gray-700 py-1 px-2 rounded-full">Host</span>
-              )}
-            </div>
-            <span className={`px-2 py-1 rounded-lg ${player.ready ? 'bg-green-500' : 'bg-red-500'}`}>
-              {player.ready ? 'Ready' : 'Not Ready'}
-            </span>
-          </li>
-        ))}
-      </ul>
+    <div className='flex flex-col'>
+      <h2 className="text-2xl font-semibold mb-2">Players</h2>
+      <div className="h-64 bg-gray-800 p-4 rounded-lg shadow-md overflow-y-auto">
+        {players.length === 0 ? (
+          <p className="text-gray-400">No players yet</p>
+        ) : (
+          <ul className="space-y-2">
+            {players.map((player, index) => (
+              <li key={index} className="flex justify-between items-center py-2 px-4 bg-gray-700 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <span className={`font-semibold ${player.username === username ? 'text-indigo-400' : 'text-white'}`}>
+                    {player.username}
+                  </span>
+                  {player.username === host && (
+                    <span className="text-xs text-yellow-500 bg-gray-600 py-1 px-2 rounded-full">Host</span>
+                  )}
+                </div>
+                <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${player.ready ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                  {player.ready ? 'Ready' : 'Not Ready'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   )
 }

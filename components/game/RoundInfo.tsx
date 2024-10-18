@@ -8,8 +8,10 @@ interface RoundInfoProps {
 
 const RoundInfo = ({ round, numRounds }: RoundInfoProps) => {
   return (
-    <div className="mb-4">
-      <h2 className="text-2xl font-semibold">Round {round} / {numRounds}</h2>
+    <div className="flex items-center justify-center p-4 bg-gray-200/20 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-white">
+        Round {round} / {numRounds}
+      </h2>
     </div>
   )
 }

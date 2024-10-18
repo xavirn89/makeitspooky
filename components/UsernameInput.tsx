@@ -1,50 +1,50 @@
 // @/components/UsernameInput.tsx
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAppStore } from '@/stores/useAppStore'
+import { IoMdRefresh } from "react-icons/io";
+import { FaCheck } from "react-icons/fa";
 
 const UsernameInput = () => {
   const { username, setUsername } = useAppStore()
-  const [input, setInput] = useState<string>('')
+  const [input, setInput] = useState('')
 
   useEffect(() => {
-    // Cargar el nombre de usuario desde localStorage
     const savedUsername = localStorage.getItem('username')
     if (savedUsername) {
       setUsername(savedUsername)
     }
   }, [setUsername])
 
-  const handleSaveUsername = () => {
+  const handleSaveUsername = useCallback(() => {
     if (input.trim()) {
-      // Guardar en localStorage y actualizar el estado global
       localStorage.setItem('username', input)
       setUsername(input)
     }
-  }
+  }, [input, setUsername])
 
-  const handleChangeUsername = () => {
-    // Limpiar el nombre de usuario de localStorage y del estado global
+  const handleChangeUsername = useCallback(() => {
     localStorage.removeItem('username')
     setUsername('')
-    setInput('') // Limpiar el input también
-  }
+    setInput('')
+  }, [setUsername])
 
   return (
-    <div className="space-y-4">
+    <div className="flex justify-center">
       {username ? (
-        <div>
-          <p className="text-lg">Welcome, <span className="font-semibold text-indigo-400">{username}</span>!</p>
+        <div className="flex gap-3 items-center">
+          <p className="text-xl">Welcome, <span className="font-semibold text-indigo-400">{username}</span>!</p>
           <button 
-            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg mt-2"
+            className="bg-slate-600 hover:bg-slate-700 text-white py-1 px-2 rounded-lg"
             onClick={handleChangeUsername}
+            aria-label="Change Username"
           >
-            Change Username
+            <IoMdRefresh size={22} />
           </button>
         </div>
       ) : (
-        <div className="flex flex-col space-y-4">
+        <div className="flex gap-3 items-center">
           <input
             type="text"
             value={input}
@@ -53,10 +53,10 @@ const UsernameInput = () => {
             onChange={(e) => setInput(e.target.value)}
           />
           <button 
-            className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg"
+            className="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg"
             onClick={handleSaveUsername}
           >
-            Save Username
+            <FaCheck size={18} />
           </button>
         </div>
       )}
