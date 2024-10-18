@@ -130,15 +130,6 @@ export default function GamePage() {
           {phase === 1 && <Phase1 uploadedParameters={playerParameters} roundImage={roundImage!} />}
         </div>
       </div>
-      
-
-      
-
-
-      
-
-
-
       <CloseRoomButton />
     </div>
   )
