@@ -12,7 +12,6 @@ import Chat from '@/components/room/Chat'
 import Navbar from '@/sections/Navbar'
 import Controls from '@/components/room/Controls'
 import RoomInfo from '@/components/room/RoomInfo'
-import CloseRoomButton from '@/components/CloseRoomButton'
 
 const RoomPage = () => {
   const { roomToken, username, setStage, setRound, setPhase } = useAppStore()

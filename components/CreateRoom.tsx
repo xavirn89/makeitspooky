@@ -1,7 +1,6 @@
 // @/components/CreateRoom
 "use client"
 
-import { v4 as uuidv4 } from 'uuid'
 import { useAppStore } from '@/stores/useAppStore'
 import { database } from '@/firebase'
 import { ref, set } from 'firebase/database'
