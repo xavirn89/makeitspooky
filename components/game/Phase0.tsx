@@ -12,17 +12,18 @@ export default function Phase0() {
   const [textToReplaceBackground, setTextToReplaceBackground] = useState<string | null>(null)
   const [isUploaded, setIsUploaded] = useState<boolean>(false)
 
+  // Clean the input text by removing any special characters
   const cleanText = (text: string) => {
     return text.replace(/[^\w\s]/gi, '')
   }
 
+  // Handle saving transformations to the database for the player
   const handleSaveTransformations = async () => {
     if (!fromObject || !toObject || !textToReplaceBackground || !roundImage) {
       alert('Please fill all fields')
       return
     }
 
-    // Clean the background replacement text
     const cleanedText = cleanText(textToReplaceBackground)
 
     const parameters = {
@@ -39,15 +40,16 @@ export default function Phase0() {
     }
   }
 
-  const handleRandomUrlUpload = async () => {
-    const randomUrl = `https://example.com/${Math.random().toString(36).substring(2, 17)}`
-    try {
-      await savePlayerParameters_DB(roomToken!, round!, username!, { fromObject: "random", toObject: "random", backgroundReplacePrompt: randomUrl })
-      setIsUploaded(true)
-    } catch (error) {
-      console.error('Error uploading random URL:', error)
-    }
-  }
+  // Handle generating and uploading a random URL as player parameters
+  // const handleRandomUrlUpload = async () => {
+  //   const randomUrl = `https://example.com/${Math.random().toString(36).substring(2, 17)}`
+  //   try {
+  //     await savePlayerParameters_DB(roomToken!, round!, username!, { fromObject: "random", toObject: "random", backgroundReplacePrompt: randomUrl })
+  //     setIsUploaded(true)
+  //   } catch (error) {
+  //     console.error('Error uploading random URL:', error)
+  //   }
+  // }
 
   if (isUploaded) {
     return (
@@ -121,12 +123,12 @@ export default function Phase0() {
           Save Transformations
         </button>
 
-        <button
+        {/* <button
           onClick={handleRandomUrlUpload}
           className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg"
         >
           Upload Random URL
-        </button>
+        </button> */}
       </div>
     </div>
   )

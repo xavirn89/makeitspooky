@@ -21,6 +21,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
   const [playerCount] = useState<number>(Object.keys(uploadedParameters).length)
   const [blurDataURL, setBlurDataURL] = useState<string | null>(null)
 
+  // useEffect to listen to votes and update the totalVotes state
   useEffect(() => {
     if (!roomToken || !round) return
 
@@ -33,38 +34,46 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
     }
   }, [roomToken, round])
 
+  // useEffect to calculate and save points when all players have voted
   useEffect(() => {
     if (Object.keys(totalVotes).length === playerCount && playerCount > 0) {
       calculateAndSavePoints()
     }
   }, [totalVotes, playerCount])
 
+  // useEffect to generate the blurDataURL for placeholder effect on images
   useEffect(() => {
     if (!roundImage) return
 
-    // Generate the blurDataURL for the placeholder effect
     const generateBlurDataURL = async () => {
-      const imageUrl = getCldImageUrl({
-        src: roundImage,
-        width: 100, // Small width for quick loading blur effect
-      })
-      const response = await fetch(imageUrl)
-      const arrayBuffer = await response.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-      const base64 = buffer.toString("base64")
-      const dataUrl = `data:${response.headers.get('content-type')};base64,${base64}`
-      setBlurDataURL(dataUrl)
+      try {
+        const imageUrl = getCldImageUrl({
+          src: roundImage,
+          width: 100, // small width for faster loading
+        })
+        const response = await fetch(imageUrl)
+        const arrayBuffer = await response.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        const base64 = buffer.toString("base64")
+        const dataUrl = `data:${response.headers.get('content-type')};base64,${base64}`
+        setBlurDataURL(dataUrl)
+      } catch (error) {
+        console.error("Error generating blurDataURL:", error)
+        setBlurDataURL('/images/placeholder.jpg')
+      }
     }
 
     generateBlurDataURL()
   }, [roundImage])
 
+  // Function to handle voting for a player
   const handleVote = async (votedPlayer: string) => {
     if (!roomToken || !round || !username) return
     await saveVote_DB(roomToken, round, username, votedPlayer)
     setHasVoted(votedPlayer)
   }
 
+  // Function to calculate and save points based on the voting results
   const calculateAndSavePoints = async () => {
     if (!roomToken || !round) return
 
@@ -86,6 +95,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
 
     const isLastRound = round === numRounds
 
+    // Check if it's the last round, otherwise select a new image and start the next round
     if (isLastRound) {
       setPhase(0)
       setPhase_DB(roomToken!, 0)
@@ -99,6 +109,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
     }
   }
 
+  // Function to select a new image for the next round, ensuring no repetition of images
   const selectNewRoundImage = async () => {
     const usedImages = await getUsedImages_DB(roomToken!)
     setUsedImages(usedImages as string[])
@@ -132,7 +143,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
                   onClick={() => handleVote(player)}
                 >
                   <div className="w-full h-full">
-                    {parameters ? (
+                    {parameters && blurDataURL ? (
                       <CldImage
                         sizes="100vw"
                         width="1024"
@@ -149,7 +160,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
                         }}
                         alt="Transformation"
                         placeholder="blur"
-                        blurDataURL={blurDataURL || ''}
+                        blurDataURL={blurDataURL}
                         className="w-full h-full object-cover rounded-lg shadow-lg"
                       />
                     ) : (
@@ -179,5 +190,5 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
         </div>
       )}
     </div>
-  )  
+  )
 }
