@@ -4,20 +4,22 @@
 import { useEffect, useState } from "react"
 import { useAppStore } from "@/stores/useAppStore"
 import { saveVote_DB, listenToVotes_DB, setRound_DB, setPhase_DB, savePlayerPoints_DB, setStage_DB, getUsedImages_DB, setRoundImage_DB, addToUsedImages_DB } from '@/utils/firebaseUtils'
-import { CldImage } from "next-cloudinary"
+import { CldImage, getCldImageUrl } from "next-cloudinary"
 import { Parameters } from "@/types/global"
 import { imageNames } from '@/utils/constants'
 
 interface Phase1Props {
   uploadedParameters: { [username: string]: Parameters }
   roundImage: string
+  imHost: boolean | undefined
 }
 
-export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) {
+export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase1Props) {
   const { roomToken, round, username, numRounds, setPhase, setRound, setUsedImages } = useAppStore()
   const [hasVoted, setHasVoted] = useState<string | null>(null)
   const [totalVotes, setTotalVotes] = useState<{ [voter: string]: string }>({})
   const [playerCount] = useState<number>(Object.keys(uploadedParameters).length)
+  const [blurDataURL, setBlurDataURL] = useState<string | null>(null)
 
   useEffect(() => {
     if (!roomToken || !round) return
@@ -37,6 +39,26 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
     }
   }, [totalVotes, playerCount])
 
+  useEffect(() => {
+    if (!roundImage) return
+
+    // Generate the blurDataURL for the placeholder effect
+    const generateBlurDataURL = async () => {
+      const imageUrl = getCldImageUrl({
+        src: roundImage,
+        width: 100, // Small width for quick loading blur effect
+      })
+      const response = await fetch(imageUrl)
+      const arrayBuffer = await response.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      const base64 = buffer.toString("base64")
+      const dataUrl = `data:${response.headers.get('content-type')};base64,${base64}`
+      setBlurDataURL(dataUrl)
+    }
+
+    generateBlurDataURL()
+  }, [roundImage])
+
   const handleVote = async (votedPlayer: string) => {
     if (!roomToken || !round || !username) return
     await saveVote_DB(roomToken, round, username, votedPlayer)
@@ -44,18 +66,22 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
   }
 
   const calculateAndSavePoints = async () => {
-    const voteCounts: { [player: string]: number } = {}
-    Object.values(totalVotes).forEach((votedPlayer) => {
-      voteCounts[votedPlayer] = (voteCounts[votedPlayer] || 0) + 1
-    })
+    if (!roomToken || !round) return
 
-    const maxVotes = Math.max(...Object.values(voteCounts))
-    const playersWithMaxVotes = Object.keys(voteCounts).filter(player => voteCounts[player] === maxVotes)
+    if (imHost) {
+      const voteCounts: { [player: string]: number } = {}
+      Object.values(totalVotes).forEach((votedPlayer) => {
+        voteCounts[votedPlayer] = (voteCounts[votedPlayer] || 0) + 1
+      })
 
-    const pointsPerPlayer = Math.trunc(100 / playersWithMaxVotes.length)
+      const maxVotes = Math.max(...Object.values(voteCounts))
+      const playersWithMaxVotes = Object.keys(voteCounts).filter(player => voteCounts[player] === maxVotes)
 
-    for (const player of playersWithMaxVotes) {
-      await savePlayerPoints_DB(roomToken!, player, pointsPerPlayer)
+      const pointsPerPlayer = Math.trunc(100 / playersWithMaxVotes.length)
+
+      for (const player of playersWithMaxVotes) {
+        await savePlayerPoints_DB(roomToken!, player, pointsPerPlayer)
+      }
     }
 
     const isLastRound = round === numRounds
@@ -65,7 +91,7 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
       setPhase_DB(roomToken!, 0)
       setStage_DB(roomToken!, 2)
     } else {
-      await selectNewRoundImage()  // Select a new round image for the next round
+      await selectNewRoundImage()
       setRound(round + 1)
       setPhase(0)
       setRound_DB(roomToken!, round + 1)
@@ -95,45 +121,63 @@ export default function Phase1({ uploadedParameters, roundImage }: Phase1Props) 
             Vote for the image that you find the most spooky, scary, or original! Click on the image to submit your vote.
           </p>
         </div>
-
-        <div className="grid grid-cols-3 gap-4 w-full">
-          {Object.entries(uploadedParameters).map(([player, parameters]) =>
-            player !== username ? (
-              <div
-                key={player}
-                className="relative group p-4 border-2 border-gray-500 rounded-lg cursor-pointer"
-                onClick={() => handleVote(player)}
-              >
-                <CldImage
-                  width="960"
-                  height="600"
-                  src={roundImage}
-                  replace={{
-                    from: parameters.fromObject,
-                    to: parameters.toObject,
-                    preserveGeometry: true
-                  }}
-                  replaceBackground={{
-                    prompt: parameters.backgroundReplacePrompt,
-                    seed: 3
-                  }}
-                  alt={`${player}'s Transformation`}
-                  className="rounded-lg shadow-lg"
-                />
-                <p className="text-center mt-2">{player}</p>
-
-                <div className="absolute inset-0 border-2 border-transparent rounded-lg group-hover:border-indigo-500 transition-all duration-300"></div>
-              </div>
-            ) : null
-          )}
-        </div>
+  
+        {!hasVoted && (
+          <div className="grid grid-cols-2 gap-4 w-full">
+            {Object.entries(uploadedParameters).map(([player, parameters]) =>
+              player !== username ? (
+                <div
+                  key={player}
+                  className="relative group p-4 border-2 border-gray-500 rounded-lg cursor-pointer"
+                  onClick={() => handleVote(player)}
+                >
+                  <div className="w-full h-full">
+                    {parameters ? (
+                      <CldImage
+                        sizes="100vw"
+                        width="1024"
+                        height="1024"
+                        src={roundImage}
+                        replace={{
+                          from: parameters.fromObject,
+                          to: parameters.toObject,
+                          preserveGeometry: true,
+                        }}
+                        replaceBackground={{
+                          prompt: parameters.backgroundReplacePrompt,
+                          seed: 3,
+                        }}
+                        alt="Transformation"
+                        placeholder="blur"
+                        blurDataURL={blurDataURL || ''}
+                        className="w-full h-full object-cover rounded-lg shadow-lg"
+                      />
+                    ) : (
+                      <img
+                        width="640"
+                        height="640"
+                        src={`/images/${roundImage}.jpg`}
+                        alt={`Round image: ${roundImage}`}
+                        className="w-full h-full object-cover rounded-lg shadow-lg"
+                      />
+                    )}
+                  </div>
+  
+                  <div className="absolute inset-0 border-2 border-transparent rounded-lg group-hover:border-indigo-500 transition-all duration-300"></div>
+                </div>
+              ) : null
+            )}
+          </div>
+        )}
       </div>
-
+  
       {hasVoted && (
         <div className="text-xl text-white">
-          <p>You voted for <strong>{hasVoted}</strong>. Waiting for other players to finish voting...</p>
+          <p>
+            You voted for <strong>{hasVoted}</strong>. Waiting for other players to finish voting...
+          </p>
         </div>
       )}
     </div>
-  )
+  )  
 }

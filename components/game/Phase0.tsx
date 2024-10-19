@@ -12,16 +12,23 @@ export default function Phase0() {
   const [textToReplaceBackground, setTextToReplaceBackground] = useState<string | null>(null)
   const [isUploaded, setIsUploaded] = useState<boolean>(false)
 
+  const cleanText = (text: string) => {
+    return text.replace(/[^\w\s]/gi, '')
+  }
+
   const handleSaveTransformations = async () => {
     if (!fromObject || !toObject || !textToReplaceBackground || !roundImage) {
       alert('Please fill all fields')
       return
     }
 
+    // Clean the background replacement text
+    const cleanedText = cleanText(textToReplaceBackground)
+
     const parameters = {
       fromObject,
       toObject,
-      backgroundReplacePrompt: "Create a background with a dark and scary atmosphere for a " + textToReplaceBackground
+      backgroundReplacePrompt: "Create a background with a dark and scary atmosphere for a " + cleanedText
     }
 
     try {
@@ -79,7 +86,7 @@ export default function Phase0() {
                 type="text"
                 value={fromObject}
                 onChange={(e) => setFromObject(e.target.value)}
-                placeholder="Object to replace (e.g., 'pencil')"
+                placeholder="Object (e.g., 'pencil')"
                 className="p-3 rounded-lg bg-gray-700 text-white mb-4 w-full"
               />
               <input

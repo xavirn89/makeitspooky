@@ -10,7 +10,6 @@ interface ClassificationProps {
 
 const Classification = ({ points, players }: ClassificationProps) => {
   const sortedPlayers = Object.entries(points).sort(([, pointsA], [, pointsB]) => pointsB - pointsA)
-
   if (sortedPlayers.length === 0) {
     const zeroPointPlayers = players
       .map(player => ({ username: player.username, points: 0 }))

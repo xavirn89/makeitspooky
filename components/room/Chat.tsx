@@ -1,16 +1,23 @@
 // @/components/room/Chat
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { ChatMessage } from '@/types/global'
 import { useAppStore } from '@/stores/useAppStore'
 import { listenToMessages_DB, sendMessage_DB } from '@/utils/firebaseUtils'
+
 const Chat = () => {
-  const { username, roomToken} = useAppStore()
+  const { username, roomToken } = useAppStore()
   const [message, setMessage] = useState<string>('')
   const [chat, setChat] = useState<ChatMessage[]>([])
+  const inputRef = useRef<HTMLInputElement>(null)
+  const sendButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+
     if (!username || !roomToken) return
 
     const unsubscribeChat = listenToMessages_DB(roomToken, (messages: ChatMessage[]) => {
@@ -20,12 +27,26 @@ const Chat = () => {
     return () => {
       unsubscribeChat()
     }
-  }, [username])
+  }, [username, roomToken])
 
   const handleSendMessage = () => {
     if (message.trim() && roomToken && username) {
       sendMessage_DB(roomToken, username, message)
       setMessage('')
+
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+
+      if (sendButtonRef.current) {
+        sendButtonRef.current.click()
+      }
     }
   }
 
@@ -53,10 +74,13 @@ const Chat = () => {
           placeholder="Type a message"
           className="flex-grow p-2 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          ref={inputRef}
         />
         <button
           className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg"
           onClick={handleSendMessage}
+          ref={sendButtonRef}
         >
           Send
         </button>

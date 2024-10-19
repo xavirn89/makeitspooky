@@ -1,3 +1,4 @@
+// @/pages/aftergame/page
 "use client"
 
 import { useEffect, useState } from "react"
@@ -18,14 +19,12 @@ export default function AfterGamePage() {
   useEffect(() => {
     if (!roomToken) return
 
-    // Obtener los puntos de los jugadores de la base de datos
     const fetchPlayerPoints = async () => {
       const points = await getPlayerPoints_DB(roomToken)
       const formattedPoints = Object.entries(points).map(([username, points]) => ({
         username,
         points,
       }))
-      // Ordenar los jugadores por puntos, de mayor a menor
       formattedPoints.sort((a, b) => b.points - a.points)
       setPlayerPoints(formattedPoints)
     }
@@ -40,34 +39,37 @@ export default function AfterGamePage() {
   const winner = playerPoints[0]
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Final Rankings</h1>
+    <div className="min-h-screen bg-gradient-to-r from-gray-800 via-gray-900 to-black text-white p-8">
+      <h1 className="text-5xl font-bold mb-12 text-center tracking-wide animate-pulse">Final Rankings</h1>
       
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="max-w-3xl mx-auto space-y-6">
         {playerPoints.map((player, index) => (
           <div
             key={player.username}
-            className={`p-4 rounded-lg shadow-lg flex justify-between items-center ${
-              index === 0 ? "bg-yellow-500 text-gray-900" : "bg-gray-800"
+            className={`p-6 rounded-lg shadow-xl flex justify-between items-center transition-all duration-300 transform hover:scale-105 ${
+              index === 0
+                ? "bg-yellow-500 text-gray-900 font-bold"
+                : index === 1
+                ? "bg-gray-700 text-white"
+                : "bg-gray-600 text-gray-200"
             }`}
           >
-            <span className="font-semibold text-xl">{player.username}</span>
-            <span className="text-lg font-bold">{player.points} pts</span>
+            <span className="font-semibold text-2xl">{player.username}</span>
+            <span className="text-xl font-bold">{player.points} pts</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-12 text-center">
-        <h2 className="text-3xl font-bold">🏆 Winner 🏆</h2>
-        <p className="text-2xl mt-4 font-semibold">{winner.username}</p>
-        <p className="text-lg text-gray-400">{winner.points} points</p>
+      <div className="mt-16 text-center">
+        <h2 className="text-4xl font-bold text-yellow-400 animate-bounce">🏆 Winner 🏆</h2>
+        <p className="text-3xl mt-4 font-semibold tracking-wide">{winner.username}</p>
+        <p className="text-lg text-gray-300">{winner.points} points</p>
       </div>
 
-      {/* Botón para volver a la página principal */}
-      <div className="mt-8 text-center">
+      <div className="mt-12 text-center">
         <button
           onClick={() => router.push('/')}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg text-lg shadow-lg hover:shadow-xl transition-transform transform hover:scale-110"
         >
           Go to Home
         </button>

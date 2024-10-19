@@ -12,6 +12,7 @@ import Chat from '@/components/room/Chat'
 import Navbar from '@/sections/Navbar'
 import Controls from '@/components/room/Controls'
 import RoomInfo from '@/components/room/RoomInfo'
+import CloseRoomButton from '@/components/CloseRoomButton'
 
 const RoomPage = () => {
   const { roomToken, username, setStage, setRound, setPhase } = useAppStore()
@@ -38,7 +39,9 @@ const RoomPage = () => {
     })
 
     const unsubscribeNumRounds = listenToNumRounds_DB(roomToken, (newNumRounds) => {
-      setNumRounds((prevRounds) => prevRounds !== newNumRounds ? newNumRounds : prevRounds)
+      if (newNumRounds !== 0) {
+        setNumRounds((prevRounds) => prevRounds !== newNumRounds ? newNumRounds : prevRounds)
+      }
     })
 
     if (!imHost) {
@@ -86,6 +89,11 @@ const RoomPage = () => {
   }
 
   const startGame = async () => {
+    // if (players.length < 4) {
+    //   alert("At least 3 players are required to start the game.")
+    //   return
+    // }
+
     await setNumberOfRounds_DB(roomToken!, numRounds)
     await setStageAndRoundAndPhase_DB(roomToken!, 1, 1, 0)
     setStage(1)
@@ -97,8 +105,8 @@ const RoomPage = () => {
   if (!roomToken || !username) return null
 
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col items-center">
-      <Navbar />
+    <div className="h-full bg-gray-900 text-white flex flex-col items-center">
+      <Navbar roomToken={roomToken} closeButton />
 
       <div className='flex w-full h-full max-w-6xl gap-10'>
         <div className='flex flex-col w-2/3 h-full gap-10'>

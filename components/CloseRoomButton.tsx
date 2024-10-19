@@ -34,9 +34,9 @@ const CloseRoomButton = () => {
   return (
     <button
       onClick={handleCloseRoom}
-      className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg mt-4"
+      className="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-lg"
     >
-      Close and Delete Room
+      <p className='font-bold'>Close Room</p>
     </button>
   )
 }
