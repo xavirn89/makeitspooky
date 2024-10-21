@@ -20,6 +20,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
   const [totalVotes, setTotalVotes] = useState<{ [voter: string]: string }>({})
   const [playerCount] = useState<number>(Object.keys(uploadedParameters).length)
   const [blurDataURL, setBlurDataURL] = useState<string | null>(null)
+  const [loadingImages, setLoadingImages] = useState<{ [player: string]: boolean }>({})
 
   // useEffect to listen to votes and update the totalVotes state
   useEffect(() => {
@@ -123,6 +124,16 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
     console.log(`New round image selected: ${randomImage}`)
   }
 
+  // useEffect to set the initial loading state for images
+  useEffect(() => {
+    const initialLoadingState = Object.keys(uploadedParameters).reduce((acc, player) => {
+      acc[player] = true
+      return acc
+    }, {} as { [player: string]: boolean })
+    setLoadingImages(initialLoadingState)
+  }, [uploadedParameters])
+  
+
   return (
     <div className="flex w-full h-full flex-col gap-10">
       <div className="flex flex-col w-full gap-10">
@@ -139,30 +150,34 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
               player !== username ? (
                 <div
                   key={player}
-                  className="relative group p-4 border-2 border-gray-500 rounded-lg cursor-pointer"
+                  className="relative group rounded-lg cursor-pointer"
                   onClick={() => handleVote(player)}
                 >
                   <div className="w-full h-full">
                     {parameters && blurDataURL ? (
-                      <CldImage
-                        sizes="100vw"
-                        width="1024"
-                        height="1024"
-                        src={roundImage}
-                        replace={{
-                          from: parameters.fromObject,
-                          to: parameters.toObject,
-                          preserveGeometry: true,
-                        }}
-                        replaceBackground={{
-                          prompt: parameters.backgroundReplacePrompt,
-                          seed: 3,
-                        }}
-                        alt="Transformation"
-                        placeholder="blur"
-                        blurDataURL={blurDataURL}
-                        className="w-full h-full object-cover rounded-lg shadow-lg"
-                      />
+                      <>
+                        <CldImage
+                          sizes="100vw"
+                          width="1024"
+                          height="1024"
+                          src={roundImage}
+                          replace={{
+                            from: parameters.fromObject,
+                            to: parameters.toObject,
+                            preserveGeometry: true,
+                          }}
+                          replaceBackground={{
+                            prompt: parameters.backgroundReplacePrompt,
+                            seed: 3,
+                          }}
+                          alt="Transformation"
+                          placeholder="blur"
+                          blurDataURL={blurDataURL}
+                          className="w-full h-full object-cover rounded-lg shadow-lg"
+                          onLoad={() => setLoadingImages(prev => ({ ...prev, [player]: false }))}
+                        />
+                        {loadingImages[player] && <p className="text-white mt-2">Loading...</p>}
+                      </>
                     ) : (
                       <img
                         width="640"
@@ -180,6 +195,13 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
             )}
           </div>
         )}
+        
+        <div className="bg-gray-800/25 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold text-white mb-4">Image Loading</h2>
+          <p className="text-gray-400 mb-4">
+            The images will be blurred until fully loaded. Images may take a few seconds to load (or almost a minute if you're on a slow connection). Please be patient!
+          </p>
+        </div>
       </div>
   
       {hasVoted && (
