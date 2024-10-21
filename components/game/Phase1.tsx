@@ -4,9 +4,10 @@
 import { useEffect, useState } from "react"
 import { useAppStore } from "@/stores/useAppStore"
 import { saveVote_DB, listenToVotes_DB, setRound_DB, setPhase_DB, savePlayerPoints_DB, setStage_DB, getUsedImages_DB, setRoundImage_DB, addToUsedImages_DB } from '@/utils/firebaseUtils'
-import { CldImage, getCldImageUrl } from "next-cloudinary"
+import { getCldImageUrl } from "next-cloudinary"
 import { Parameters } from "@/types/global"
 import { imageNames } from '@/utils/constants'
+import ImageWithRetry from "@/components/ImageWithRetry"
 
 interface Phase1Props {
   uploadedParameters: { [username: string]: Parameters }
@@ -136,14 +137,16 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
 
   return (
     <div className="flex w-full h-full flex-col gap-10">
-      <div className="flex flex-col w-full gap-10">
+      <div className="flex flex-col w-full h-full gap-10">
         <div className="bg-gray-800/25 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-white mb-4">Player Transformations</h2>
           <p className="text-gray-400 mb-4">
             Vote for the image that you find the most spooky, scary, or original! Click on the image to submit your vote.
           </p>
+          <p className="text-gray-400 mb-4">
+            The images will be blurred until fully loaded. Images may take a few seconds to load (or almost a minute if you&apos;re on a slow connection). Please be patient!
+          </p>
         </div>
-  
         {!hasVoted && (
           <div className="grid grid-cols-2 gap-4 w-full">
             {Object.entries(uploadedParameters).map(([player, parameters]) =>
@@ -156,27 +159,18 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
                   <div className="w-full h-full">
                     {parameters && blurDataURL ? (
                       <>
-                        <CldImage
-                          sizes="100vw"
-                          width="1024"
-                          height="1024"
-                          src={roundImage}
-                          replace={{
-                            from: parameters.fromObject,
-                            to: parameters.toObject,
-                            preserveGeometry: true,
-                          }}
-                          replaceBackground={{
-                            prompt: parameters.backgroundReplacePrompt,
-                            seed: 3,
-                          }}
-                          alt="Transformation"
-                          placeholder="blur"
-                          blurDataURL={blurDataURL}
-                          className="w-full h-full object-cover rounded-lg shadow-lg"
-                          onLoad={() => setLoadingImages(prev => ({ ...prev, [player]: false }))}
-                        />
-                        {loadingImages[player] && <p className="text-white mt-2">Loading...</p>}
+                      <ImageWithRetry 
+                        parameters={parameters} 
+                        roundImage={roundImage} 
+                        blurDataURL={blurDataURL} 
+                        player={player} 
+                        setLoadingImages={setLoadingImages}
+                      />
+                      {loadingImages[player] && (
+                        <div className="absolute inset-0 flex justify-center items-center bg-gray-800/50 rounded-lg">
+                          <p className="text-white text-lg">Loading...</p>
+                        </div>
+                      )}
                       </>
                     ) : (
                       <img
@@ -188,20 +182,13 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
                       />
                     )}
                   </div>
-  
+
                   <div className="absolute inset-0 border-2 border-transparent rounded-lg group-hover:border-indigo-500 transition-all duration-300"></div>
                 </div>
               ) : null
             )}
           </div>
         )}
-        
-        <div className="bg-gray-800/25 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold text-white mb-4">Image Loading</h2>
-          <p className="text-gray-400 mb-4">
-            The images will be blurred until fully loaded. Images may take a few seconds to load (or almost a minute if you&apos;re on a slow connection). Please be patient!
-          </p>
-        </div>
       </div>
   
       {hasVoted && (

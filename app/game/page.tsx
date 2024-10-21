@@ -14,7 +14,7 @@ export default function GamePage() {
   const { players, playerParameters, points, imHost, roundImage } = useGameLogic()
 
   return (
-    <div className="h-full bg-gray-900 text-white flex flex-col items-center">
+    <div className="h-full bg-gray-900 text-white flex flex-col flex-grow items-center">
       <Navbar roomToken={roomToken!} showRoomTitle closeButton />
 
       <div className='flex w-full h-full gap-10 px-52'>
