@@ -199,7 +199,7 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
         <div className="bg-gray-800/25 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-white mb-4">Image Loading</h2>
           <p className="text-gray-400 mb-4">
-            The images will be blurred until fully loaded. Images may take a few seconds to load (or almost a minute if you're on a slow connection). Please be patient!
+            The images will be blurred until fully loaded. Images may take a few seconds to load (or almost a minute if you&apos;re on a slow connection). Please be patient!
           </p>
         </div>
       </div>
