@@ -47,3 +47,8 @@ Due to personal and work commitments, I couldn't dedicate as much time as I woul
 - **Better points system**: Refining and optimizing how points are assigned based on votes.
 
 Thank you for checking out **Make it Spooky**, and I hope you have fun trying it out!
+
+### Connect with Me:
+
+- **[LinkedIn](https://www.linkedin.com/in/xavi-ramon-nicolau-08289a261/)**
+- **[GitHub](https://github.com/xavirn89)**
