@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { useAppStore } from "@/stores/useAppStore"
 import { getPlayerPoints_DB } from "@/utils/firebaseUtils"
 import { useRouter } from "next/navigation"
+import Confetti from 'react-confetti'
 
 interface PlayerPoints {
   username: string
@@ -74,6 +75,11 @@ export default function AfterGamePage() {
           Go to Home
         </button>
       </div>
+
+      <Confetti
+        width={window.innerWidth}
+        height={window.innerHeight}
+      />
     </div>
   )
 }
