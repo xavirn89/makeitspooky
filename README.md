@@ -1,6 +1,6 @@
 # Make it Spooky 🎃
 
-Hello! My name is Xavi Ramon Nicolau (XavirN) and Welcome to my project for the **Cloudinary Halloween Hackathon**!
+Hello! My name is Xavi Ramon Nicolau (XavirN) and Welcome to my project for the **[Cloudinary Halloween Hackathon](https://cloudinary.com/blog/cloudinary-cloudcreate-spooky-ai-hackathon)**!
 
 For this project, I wanted to do something a little different. Since I had never created a "game" in the browser and had never used Real-Time Database before, this seemed like the perfect opportunity to try both.
 
