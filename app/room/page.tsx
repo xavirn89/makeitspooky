@@ -38,10 +38,10 @@ const RoomPage = () => {
   }
 
   const startGame = async () => {
-    // if (players.length < 4) {
-    //   alert("At least 3 players are required to start the game.")
-    //   return
-    // }
+    if (players.length < 3) {
+      alert("At least 3 players are required to start the game.")
+      return
+    }
     
     await setNumberOfRounds_DB(roomToken!, numRounds)
     await setStageAndRoundAndPhase_DB(roomToken!, 1, 1, 0)
