@@ -4,12 +4,15 @@ Hello! My name is Xavi Ramon Nicolau (XavirN) and Welcome to my project for the 
 
 For this project, I wanted to do something a little different. Since I had never created a "game" in the browser and had never used Real-Time Database before, this seemed like the perfect opportunity to try both.
 
+## 🎮 [Play Make it Spooky!](https://makeitspooky.vercel.app/)
+
 ![Project Screenshot](./public/images/screenshot.png)
 
 **Make it Spooky** is a browser-based game where you and 3 or more friends (or just several browser windows or sessions if you're playing alone) can compete to create the spookiest image possible and crown the winner!
 
 ### How to Play:
 
+- Go to [https://makeitspooky.vercel.app/](https://makeitspooky.vercel.app/)
 - One player must create a room. A token will be generated that you can share with your friends to allow them to join your room.
 - Once everyone is ready, the host can start the game.
 
