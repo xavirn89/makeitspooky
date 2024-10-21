@@ -146,6 +146,13 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
           <p className="text-gray-400 mb-4">
             The images will be blurred until fully loaded. Images may take a few seconds to load (or almost a minute if you&apos;re on a slow connection). Please be patient!
           </p>
+          {hasVoted && (
+          <div className="text-xl text-white">
+            <p>
+              You voted for <strong>{hasVoted}</strong>. Waiting for other players to finish voting...
+            </p>
+          </div>
+          )}
         </div>
         {!hasVoted && (
           <div className="grid grid-cols-2 gap-4 w-full">
@@ -190,14 +197,6 @@ export default function Phase1({ uploadedParameters, roundImage, imHost }: Phase
           </div>
         )}
       </div>
-  
-      {hasVoted && (
-        <div className="text-xl text-white">
-          <p>
-            You voted for <strong>{hasVoted}</strong>. Waiting for other players to finish voting...
-          </p>
-        </div>
-      )}
     </div>
   )
 }
