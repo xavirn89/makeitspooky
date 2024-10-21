@@ -35,6 +35,7 @@ The player with the most votes earns points, and the game continues to the next 
 
 - It is recommended to open the game in different browsers or sessions, and have one create the room so you can test it solo.
 - Be patient with image loading, as it might take some time. Even if the image link seems broken, the game will retry loading it several times in case of failure.
+- I hope my credits dont run out before Cloudinary or Midudev tries this project. If they do, pleae refill them! My cloud is xavirn-hackaton (sorry)
 
 ### What I Would Have Done With More Time:
 
